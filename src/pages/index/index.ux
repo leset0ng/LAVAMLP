@@ -15,7 +15,7 @@ import asyncRun from "../../asyncRun";
 import folme from "@system.folme"
 import wait from "./wait"
 
-const SCALE_FACTOR = 1.4
+const SCALE_FACTOR = 1.2
 
 export default {
   // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
@@ -24,7 +24,7 @@ export default {
     lyrics: [],
     current: 0,
   }, onInit() {
-    this.lyrics = Array(20).fill(0).map((_, i) => ({ text: `第${i}行`, translate: i%2==0?`第${i}行描述`:"" }));
+    this.lyrics = Array(20).fill(0).map((_, i) => ({ text: `第${i}行53454646464646546466546546464`, translate: i%2==0?`第${i}行描述`:"" }));
   },onReady() {
     this.measureLyricsHeights()
   },async measureLyricsHeights() {
@@ -37,6 +37,7 @@ export default {
         el.top = top
         asyncRun(this.$element(`text-${i}`).getBoundingClientRect).then(
           ({ height }) => {
+            height+=10 // 防止最后一行不显示
             el.textHeight = height
             el.scaledHeight = height * SCALE_FACTOR
             el.style = { height: el.textHeight }
@@ -74,7 +75,7 @@ export default {
     }
     await wait(300)
     console.log(this.lyrics[index])
-    this.$element("main").scrollTo({ top: this.lyrics[index].top - this.lyrics[index].scaledHeight*2, behavior: "smooth" });
+    this.$element("main").scrollTo({ top: this.lyrics[index].top -120, behavior: "smooth" });
     for (let i = 2; i > 0; i--) {
       if(index-i<0)continue;
       folme.to({
