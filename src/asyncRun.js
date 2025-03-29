@@ -7,7 +7,7 @@
  * @throws {Error} 函数返回的错误
  * @author lesetong
  */
-export default function asyncFunc(func, params) {
+export default function asyncRun(func, params) {
     return new Promise((resolve, reject) => func({
         success: resolve,
         fail: (data, code) => reject(new Error(`${code}:${data}`)),

@@ -1,18 +1,22 @@
 <template>
   <div class="demo-page">
     <scroll scroll-y="true" class="bg" id="main" >
-      <div for="{{lyrics}}" class="card" id="card-{{$idx}}" onclick="scrollTo($idx)">
-        <text class="title">{{$item.main}}</text>
-        <text class="detail">{{$item.translate}}</text>
+      <div for="{{lyrics}}" class="card" id="line-{{$idx}}" onclick="next">
+        <text class="title {{$item.class}}" style="{{$item.style}}" id="text-{{$idx}}">{{$item.text}}</text>
+        <text class="detail" if="{{$item.translate}}">{{$item.translate}}</text>
       </div>
+      <div style="height: 400px;"></div>
     </scroll>
   </div>
 </template>
 
 <script>
-import asyncFunc from "../../asyncFunc";
+import asyncRun from "../../asyncRun";
 import folme from "@system.folme"
 import wait from "./wait"
+
+const SCALE_FACTOR = 1.4
+
 export default {
   // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
   private: {
@@ -20,35 +24,61 @@ export default {
     lyrics: [],
     current: 0,
   }, onInit() {
-    this.lyrics = Array(100).fill(0).map((_, i) => ({ main: `第${i}行`, translate: `第${i}行描述` }));
-  }, async onReady() {
-    let top=0
-    for (const [i, e] of this.lyrics.entries()){
-      e.height = (await asyncFunc(this.$element(`card-${i}`).getBoundingClientRect)).height;
-      top+=e.height+13
-      e.top = top
+    this.lyrics = Array(20).fill(0).map((_, i) => ({ text: `第${i}行`, translate: i%2==0?`第${i}行描述`:"" }));
+  },onReady() {
+    this.measureLyricsHeights()
+  },async measureLyricsHeights() {
+    try {
+      let top=0
+      for (const [i, el] of this.lyrics.entries()){
+        const res = (await asyncRun(this.$element(`line-${i}`).getBoundingClientRect))
+        el.height = res.height
+        top += res.height+11
+        el.top = top
+        asyncRun(this.$element(`text-${i}`).getBoundingClientRect).then(
+          ({ height }) => {
+            el.textHeight = height
+            el.scaledHeight = height * SCALE_FACTOR
+            el.style = { height: el.textHeight }
+          }
+        )
+      }
+    } catch (error) {
+      console.error("测量歌词高度出错：", error)
     }
   },
   next() {
+    this.deactive(this.current)
     this.current++
+    this.active(this.current)
     this.scrollTo(this.current)
+  },
+  deactive(index) {
+    this.lyrics[index].style = { height: this.lyrics[index].textHeight }
+    this.lyrics[index].class = "disactive-text"
+  },
+  active(index) {
+    this.lyrics[index].style = { height: this.lyrics[index].scaledHeight }
+    this.lyrics[index].class = "active-text"
   },
   async scrollTo(index) {
     const duration = .3
+
     for (let i = 2; i > 0; i--) {
       if(index-i<0)continue;
       folme.to({
-        id: `card-${index-i}`,
+        id: `line-${index-i}`,
         toState: { translateY: -this.lyrics[index].height },
         config: {duration,delay:(3-i)/10},
       })
     }
     await wait(300)
-    this.$element("main").scrollTo({ top: this.lyrics[index].top - 110, behavior: "smooth" });
+    console.log(this.lyrics[index])
+    this.$element("main").scrollTo({ top: this.lyrics[index].top - this.lyrics[index].scaledHeight*2, behavior: "smooth" });
     for (let i = 2; i > 0; i--) {
       if(index-i<0)continue;
       folme.to({
-        id: `card-${index-i}`,
+        id: `line-${index-i}`,
         toState: { translateY: 0, },
         config: {duration},
       })
@@ -56,7 +86,7 @@ export default {
     for (let i = 1; i < 4; i++) {
       if(index+i>this.lyrics.length-1)continue;
       folme.to({
-        id: `card-${index + i}`,
+        id: `line-${index + i}`,
         toState: { translateY: this.lyrics[index].height },
         config: {duration},
       })
@@ -65,7 +95,7 @@ export default {
     for (let i = 1; i < 4; i++) {
       if (index + i > this.lyrics.length - 1) continue;
       folme.to({
-        id: `card-${index + i}`,
+        id: `line-${index + i}`,
           /* fromState: { translateY: this.lyrics[index].height }, */
           toState: { translateY: 0 },
           config: {duration,delay:i/10},
@@ -76,42 +106,5 @@ export default {
 </script>
 
 <style>
-#main{
-  padding-top: 90px;
-}
-.bg{
-  width: 480px;
-  height: 480px;
-  /* 自动布局 */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0px;
-
-  position: absolute;
-}
-.demo-page {
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.title {
-  font-size: 32px;
-}
-.detail{
-  font-size: 28px;
-  color: rgba(255,255,255,0.6);
-}
-.card{
-  margin-top: 8px;
-  width: 100%;
-  flex-direction: column;
-  /* align-items: center; */
-  padding: 14px 20px;
-
-  border: 0px;
-  border-radius: 36px;
-  background-color: #262626;
-}
+@import "./index.css";
 </style>

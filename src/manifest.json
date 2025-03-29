@@ -1,5 +1,5 @@
 {
-  "package": "com.application.watch.demo",
+  "package": "com.lst.LAVAmusic",
   "name": "amlyc",
   "versionName": "1.0.0",
   "versionCode": 1,
@@ -10,7 +10,7 @@
   ],
   "features": [
     {
-      "name": "system.router"
+      "name": "system.folme"
     }
   ],
   "config": {

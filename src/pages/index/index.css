@@ -1,0 +1,61 @@
+#main {
+    padding-top: 90px;
+}
+
+.bg {
+    width: 480px;
+    height: 480px;
+    /* 自动布局 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0px;
+
+    position: absolute;
+}
+
+.title {
+    font-size: 32px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.detail {
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.card {
+    margin-top: 8px;
+    width: 100%;
+    flex-direction: column;
+    /* align-items: center; */
+    padding: 14px 20px;
+
+    border: 0px;
+    /* border-radius: 36px;
+    background-color: #262626; */
+    transition: width 300ms ease-in;
+}
+
+@keyframes active-anim {
+    0% {
+        transform: scale(1.0);
+    }
+
+    100% {
+        transform: scale(1.4);
+    }
+}
+
+.disactive-text {
+    animation-name: active-anim;
+    animation-duration: 300ms;
+    animation-direction: reverse;
+}
+
+.active-text {
+    color: white;
+    animation-name: active-anim;
+    animation-duration: 300ms;
+    animation-direction: normal;
+}
