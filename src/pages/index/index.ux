@@ -1,0 +1,117 @@
+<template>
+  <div class="demo-page">
+    <scroll scroll-y="true" class="bg" id="main" >
+      <div for="{{lyrics}}" class="card" id="card-{{$idx}}" onclick="scrollTo($idx)">
+        <text class="title">{{$item.main}}</text>
+        <text class="detail">{{$item.translate}}</text>
+      </div>
+    </scroll>
+  </div>
+</template>
+
+<script>
+import asyncFunc from "../../asyncFunc";
+import folme from "@system.folme"
+import wait from "./wait"
+export default {
+  // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
+  private: {
+    title: "示例页面",
+    lyrics: [],
+    current: 0,
+  }, onInit() {
+    this.lyrics = Array(100).fill(0).map((_, i) => ({ main: `第${i}行`, translate: `第${i}行描述` }));
+  }, async onReady() {
+    let top=0
+    for (const [i, e] of this.lyrics.entries()){
+      e.height = (await asyncFunc(this.$element(`card-${i}`).getBoundingClientRect)).height;
+      top+=e.height+13
+      e.top = top
+    }
+  },
+  next() {
+    this.current++
+    this.scrollTo(this.current)
+  },
+  async scrollTo(index) {
+    const duration = .3
+    for (let i = 2; i > 0; i--) {
+      if(index-i<0)continue;
+      folme.to({
+        id: `card-${index-i}`,
+        toState: { translateY: -this.lyrics[index].height },
+        config: {duration,delay:(3-i)/10},
+      })
+    }
+    await wait(300)
+    this.$element("main").scrollTo({ top: this.lyrics[index].top - 110, behavior: "smooth" });
+    for (let i = 2; i > 0; i--) {
+      if(index-i<0)continue;
+      folme.to({
+        id: `card-${index-i}`,
+        toState: { translateY: 0, },
+        config: {duration},
+      })
+    }
+    for (let i = 1; i < 4; i++) {
+      if(index+i>this.lyrics.length-1)continue;
+      folme.to({
+        id: `card-${index + i}`,
+        toState: { translateY: this.lyrics[index].height },
+        config: {duration},
+      })
+    }
+    await wait(100)
+    for (let i = 1; i < 4; i++) {
+      if (index + i > this.lyrics.length - 1) continue;
+      folme.to({
+        id: `card-${index + i}`,
+          /* fromState: { translateY: this.lyrics[index].height }, */
+          toState: { translateY: 0 },
+          config: {duration,delay:i/10},
+      })
+    }
+  }
+}
+</script>
+
+<style>
+#main{
+  padding-top: 90px;
+}
+.bg{
+  width: 480px;
+  height: 480px;
+  /* 自动布局 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0px;
+
+  position: absolute;
+}
+.demo-page {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.title {
+  font-size: 32px;
+}
+.detail{
+  font-size: 28px;
+  color: rgba(255,255,255,0.6);
+}
+.card{
+  margin-top: 8px;
+  width: 100%;
+  flex-direction: column;
+  /* align-items: center; */
+  padding: 14px 20px;
+
+  border: 0px;
+  border-radius: 36px;
+  background-color: #262626;
+}
+</style>
